@@ -41,6 +41,10 @@ local function onPlayerConnecting(name, _, deferrals)
         end
     end
 
+    if GetConvarInt("sv_fxdkMode", false) then
+        license = 'license:AAAAAAAAAAAAAAAA' -- Dummy License
+    end
+
     if not license then
         deferrals.done(Lang:t('error.no_valid_license'))
     elseif QBCore.Config.Server.CheckDuplicateLicense and QBCore.Functions.IsLicenseInUse(license) then
@@ -164,19 +168,6 @@ RegisterNetEvent('QBCore:UpdatePlayer', function()
     Player.Functions.Save()
 end)
 
-RegisterNetEvent('QBCore:Server:SetMetaData', function(meta, data)
-    local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
-    if not Player then return end
-    if meta == 'hunger' or meta == 'thirst' then
-        if data > 100 then
-            data = 100
-        end
-    end
-    Player.Functions.SetMetaData(meta, data)
-    TriggerClientEvent('hud:client:UpdateNeeds', src, Player.PlayerData.metadata['hunger'], Player.PlayerData.metadata['thirst'])
-end)
-
 RegisterNetEvent('QBCore:ToggleDuty', function()
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
@@ -194,25 +185,23 @@ end)
 -- BaseEvents
 
 -- Vehicles
-RegisterServerEvent('baseevents:enteringVehicle', function(veh,seat,modelName,netid)
+RegisterServerEvent('baseevents:enteringVehicle', function(veh,seat,modelName)
     local src = source
     local data = {
         vehicle = veh,
         seat = seat,
         name = modelName,
-        netid = netid,
         event = 'Entering'
     }
     TriggerClientEvent('QBCore:Client:VehicleInfo', src, data)
 end)
 
-RegisterServerEvent('baseevents:enteredVehicle', function(veh,seat,modelName,netid)
+RegisterServerEvent('baseevents:enteredVehicle', function(veh,seat,modelName)
     local src = source
     local data = {
         vehicle = veh,
         seat = seat,
         name = modelName,
-        netid = netid,
         event = 'Entered'
     }
     TriggerClientEvent('QBCore:Client:VehicleInfo', src, data)
@@ -223,13 +212,12 @@ RegisterServerEvent('baseevents:enteringAborted', function()
     TriggerClientEvent('QBCore:Client:AbortVehicleEntering', src)
 end)
 
-RegisterServerEvent('baseevents:leftVehicle', function(veh,seat,modelName,netid)
+RegisterServerEvent('baseevents:leftVehicle', function(veh,seat,modelName)
     local src = source
     local data = {
         vehicle = veh,
         seat = seat,
         name = modelName,
-        netid = netid,
         event = 'Left'
     }
     TriggerClientEvent('QBCore:Client:VehicleInfo', src, data)
